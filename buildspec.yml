@@ -1,0 +1,33 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+    commands:
+      - echo "Installing Docker Compose..."
+      - curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      - chmod +x /usr/local/bin/docker-compose
+      - docker-compose --version
+  pre_build:
+    commands:
+      - echo "Logging in to Docker Hub..."
+      - docker login -u koushikmalathi1@gmail.com -p Ktr#*#*#9
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis
+  build:
+    commands:
+      - echo Building Docker image...
+      - /usr/local/bin/docker-compose build
+      - docker images  # List Docker images to verify the image exists
+  post_build:
+    commands:
+      - echo Pushing Docker image...
+      - docker tag src-app:latest 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis:latest
+      - docker push 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis:latest
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
+
+

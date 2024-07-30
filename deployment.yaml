@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-streaming-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: video-streaming-app
+  template:
+    metadata:
+      labels:
+        app: video-streaming-app
+    spec:
+      containers:
+        - name: video-streaming-app
+          image: 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis:latest
+          ports:
+            - containerPort: 5000
+

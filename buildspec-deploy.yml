@@ -1,0 +1,41 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+    commands:
+      - echo Checking Docker version...
+      - docker --version
+      - echo Installing dependencies...
+      - yum update -y
+      - yum install -y jq
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis
+      - echo Updating kubeconfig...
+      - aws eks update-kubeconfig --region us-west-2 --name Akis
+      - cat /root/.kube/config
+      - echo Verifying EKS access...
+      - kubectl get svc
+
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build -t akis:latest .
+      - echo Tagging Docker image...
+      - docker tag akis:latest 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis:latest
+
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push 270527310531.dkr.ecr.us-west-2.amazonaws.com/akis:latest
+      - echo Deploying to EKS cluster...
+      - kubectl apply -f deployment.yml
+
+artifacts:
+  files:
+    - deployment.yml
+
